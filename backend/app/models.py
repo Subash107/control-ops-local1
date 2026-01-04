@@ -112,9 +112,9 @@ class ToolHealth(Base):
         nullable=False,
         server_default=ToolHealthStatus.unknown.value,
     )
-    last_checked_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_checked_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     latency_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
-    last_error: Mapped[str] | None = mapped_column(String(512), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     tool: Mapped[Tool] = relationship("Tool", back_populates="health", uselist=False)
 
