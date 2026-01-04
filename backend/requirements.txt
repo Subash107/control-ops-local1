@@ -8,3 +8,4 @@ bcrypt==3.2.0
 pydantic==2.10.3
 pydantic-settings==2.7.0
 alembic==1.13.2
+pytest==7.4.0

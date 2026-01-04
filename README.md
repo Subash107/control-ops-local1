@@ -59,6 +59,15 @@ Set these vars (or source a `.env` file) before running Docker Compose, Alembic,
 - Database tables are auto-created on backend startup.
 - Default admin is auto-seeded when missing.
 
+## Production readiness
+
+Before pushing a build past `main` ensure the following are covered:
+
+- **Secrets and configuration** – Never reuse the sample `JWT_SECRET` or admin credentials; set strong passwords in a `.env` file or secret manager and point `DATABASE_URL`, token lifetimes, and CORS origins at the environment that will host the stack.
+- **Automated verification** – CI now builds both backend and frontend containers, runs Alembic migrations, checks for schema drift, and performs backend tests plus a production `npm run build`. These gates should pass before promoting artifacts.
+- **Deployment hygiene** – Prefer the sampled Kubernetes manifests (see `k8s/`) for production, use managed Postgres storage, and wire the NGINX ingress with TLS so only `:9000` and `/api` are externally exposed.
+- **Observability & recovery** – Run the compose healthchecks or kube liveness/readiness probes, capture backend logs somewhere centralized, and rotate tokens/keys regularly so any compromised credentials are short-lived.
+
 ## GitHub setup
 
 1. **Branch protection** – Configure a rule on `main` requiring the CI workflow to pass before merging and disallow direct pushes. This keeps the `ci.yml` run status meaningful and protects the clean history you pushed.
