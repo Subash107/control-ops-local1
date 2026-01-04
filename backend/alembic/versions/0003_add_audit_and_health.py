@@ -46,7 +46,7 @@ def upgrade() -> None:
     op.create_index("ix_favorites_tool_id", "favorites", ["tool_id"])
     op.create_unique_constraint("uq_favorites_user_tool", "favorites", ["user_id", "tool_id"])
 
-    tool_health_status = sa.Enum("unknown", "up", "down", name="tool_health_status")
+    tool_health_status = sa.Enum("unknown", "up", "down", name="tool_health_status", create_type=False)
     tool_health_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
