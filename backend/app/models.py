@@ -47,7 +47,7 @@ class Tool(Base):
         collection_class=list,
         lazy="selectin",
     )
-    health: Mapped["ToolHealth"] | None = relationship("ToolHealth", back_populates="tool", uselist=False)
+    health: Mapped["ToolHealth"] = relationship("ToolHealth", back_populates="tool", uselist=False)
 
 
 class Tag(Base):
