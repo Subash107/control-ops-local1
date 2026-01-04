@@ -1,25 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from ..deps import get_db, get_current_user
 from ..models import User
 from ..schemas import LoginRequest, RefreshRequest, TokenPair, UserOut
 from ..security import verify_password, create_access_token, create_refresh_token, decode_token
-from ..crud import get_user_by_username
+from ..crud import create_audit_log, get_user_by_username
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=TokenPair)
-def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenPair:
+def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)) -> TokenPair:
     user = get_user_by_username(db, payload.username)
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    return TokenPair(
+    tokens = TokenPair(
         access_token=create_access_token(user.id, user.role),
         refresh_token=create_refresh_token(user.id, user.role),
     )
+    create_audit_log(
+        db,
+        actor_user_id=user.id,
+        action="LOGIN",
+        entity_type="AUTH",
+        entity_id=user.id,
+        after={"username": user.username},
+        request=request,
+    )
+    return tokens
 
 
 @router.post("/refresh", response_model=TokenPair)

@@ -10,6 +10,8 @@ from .security import hash_password
 from .routers.auth import router as auth_router
 from .routers.tools import router as tools_router
 from .routers.admin import router as admin_router
+from .routers.me import router as me_router
+from .crud import create_tool, DuplicateNameError
 
 
 def _seed_default_admin(db: Session) -> None:
@@ -28,14 +30,43 @@ def _seed_default_admin(db: Session) -> None:
 def _seed_sample_tools(db: Session) -> None:
     if db.scalar(select(Tool).limit(1)) is not None:
         return
-    db.add_all(
-        [
-            Tool(name="Jenkins", description="CI/CD automation server", url="https://www.jenkins.io/", category="ci-cd", tags=["cicd", "pipelines"]),
-            Tool(name="Prometheus", description="Monitoring and alerting toolkit", url="https://prometheus.io/", category="observability", tags=["metrics", "monitoring"]),
-            Tool(name="Grafana", description="Visualization and dashboards", url="https://grafana.com/", category="observability", tags=["dashboards", "visualization"]),
-        ]
-    )
-    db.commit()
+
+    samples = [
+        {
+            "name": "Jenkins",
+            "description": "CI/CD automation server",
+            "url": "https://www.jenkins.io/",
+            "category": "ci-cd",
+            "tags": ["cicd", "pipelines"],
+        },
+        {
+            "name": "Prometheus",
+            "description": "Monitoring and alerting toolkit",
+            "url": "https://prometheus.io/",
+            "category": "observability",
+            "tags": ["metrics", "monitoring"],
+        },
+        {
+            "name": "Grafana",
+            "description": "Visualization and dashboards",
+            "url": "https://grafana.com/",
+            "category": "observability",
+            "tags": ["dashboards", "visualization"],
+        },
+    ]
+
+    for sample in samples:
+        try:
+            create_tool(
+                db,
+                sample["name"],
+                sample["description"],
+                sample["url"],
+                sample["category"],
+                sample["tags"],
+            )
+        except DuplicateNameError:
+            continue
 
 
 def create_app() -> FastAPI:
@@ -52,6 +83,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(tools_router)
     app.include_router(admin_router)
+    app.include_router(me_router)
 
     @app.get("/api/health")
     def health():

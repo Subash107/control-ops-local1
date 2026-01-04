@@ -52,7 +52,7 @@ class ToolCreate(BaseModel):
     description: str = ""
     url: str = ""
     category: str = Field(default="general", min_length=1, max_length=80)
-    tags: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list, max_items=20)
 
 
 class ToolUpdate(BaseModel):
@@ -60,11 +60,41 @@ class ToolUpdate(BaseModel):
     description: str | None = None
     url: str | None = None
     category: str | None = Field(default=None, min_length=1, max_length=80)
-    tags: list[str] | None = None
+    tags: list[str] | None = Field(default=None, max_items=20)
 
 
 class ToolListResponse(BaseModel):
     items: list[ToolOut]
     total: int
-    limit: int
-    offset: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class ToolHealthOut(BaseModel):
+    tool_id: int
+    status: str
+    last_checked_at: datetime | None
+    latency_ms: float | None
+    last_error: str | None
+
+
+class AuditLogOut(BaseModel):
+    id: int
+    actor_user_id: int | None
+    action: str
+    entity_type: str
+    entity_id: int | None
+    before: dict | None
+    after: dict | None
+    created_at: datetime
+    ip: str | None
+    user_agent: str | None
+
+
+class AuditListResponse(BaseModel):
+    items: list[AuditLogOut]
+    total: int
+    page: int
+    page_size: int
+    pages: int
