@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: devops-control-plane
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: devops-control-plane-backend:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: postgresql+psycopg2://devops:devops@postgres:5432/devops_cp
+            - name: JWT_SECRET
+              value: devops-control-plane-change-me
+            - name: ACCESS_TOKEN_EXPIRES_MINUTES
+              value: "15"
+            - name: REFRESH_TOKEN_EXPIRES_DAYS
+              value: "7"
+            - name: CORS_ORIGINS
+              value: http://localhost
+            - name: DEFAULT_ADMIN_USERNAME
+              value: admin
+            - name: DEFAULT_ADMIN_PASSWORD
+              value: admin123
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: devops-control-plane
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8000
+      targetPort: 8000
