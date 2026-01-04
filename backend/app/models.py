@@ -108,7 +108,7 @@ class ToolHealth(Base):
         primary_key=True,
     )
     status: Mapped[ToolHealthStatus] = mapped_column(
-        sa.Enum(ToolHealthStatus, name="tool_health_status"),
+        sa.Enum(ToolHealthStatus, name="tool_health_status", create_type=False),
         nullable=False,
         server_default=ToolHealthStatus.unknown.value,
     )
